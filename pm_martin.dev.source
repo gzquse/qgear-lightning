@@ -1,0 +1,27 @@
+#!/bin/bash
+#  salloc -q interactive -C gpu -t 4:00:00 -A nintern -N 1 
+# podman-hpc run -it gzquse/ubu22-qiskit1.0:p2j bash
+# export IMG=gzquse/cudaquanmpi-qiskit1:p2.1 
+export PODMANHPC_ADDITIONAL_STORES=/dvs_ro/cfs/cdirs/nintern/gzquse/podman_common/
+IMG=gzquse/nbdev:p2
+
+echo launch image $IMG
+echo you are launching Podman image ...  remeber to exit
+
+JNB_PORT=' '
+BASE_DIR=qgear-lightning  # here git has home
+WORK_DIR=$BASE_DIR
+CFSH=/pscratch/sd/g/gzquse
+
+podman-hpc run --gpu --privileged -it \
+   --volume $CFSH/$BASE_DIR:/$BASE_DIR \
+   -e DISPLAY  -v $HOME:$HOME -e HOME  \
+   -e HDF5_USE_FILE_LOCKING='FALSE' \
+   --network host \
+   --workdir /$BASE_DIR \
+   $IMG 
+
+# sudo ln -sf /usr/bin/python3 /usr/bin/python
+# pip install twine
+# nbdev_pypi
+# jupyter lab --ip 0.0.0.0 --no-browser --allow-root --port 9800
