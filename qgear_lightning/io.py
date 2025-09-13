@@ -13,17 +13,6 @@ from pprint import pprint
 
 os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
-# %% [markdown]
-# ## Writing Data to HDF5
-# 
-# The `write4_data_hdf5` function writes a dictionary of data to an HDF5 file.
-# 
-# - Strings are stored as variable-length datasets
-# - Non-NumPy values are packed into NumPy arrays
-# - Metadata (if provided) is stored as a JSON string under the key `meta.JSON`
-
-# %%
-#| export
 def write4_data_hdf5(dataD, outF, metaD=None, verb=1):
     """
     Write a dictionary of Python objects and NumPy arrays to an HDF5 file.
@@ -67,13 +56,6 @@ def write4_data_hdf5(dataD, outF, metaD=None, verb=1):
     xx = os.path.getsize(outF) / 1048576
     print('closed  hdf5:', outF, ' size=%.2f MB, elaT=%.1f sec' % (xx, (time.time() - start)))
 
-# %% [markdown]
-# ## Reading Data from HDF5
-# 
-# The `read4_data_hdf5` function reads back the stored dictionary and metadata from an HDF5 file.
-
-# %%
-#| export
 def read4_data_hdf5(inpF, verb=1):
     """
     Read data and metadata from an HDF5 file.
@@ -115,39 +97,3 @@ def read4_data_hdf5(inpF, verb=1):
     except OSError as e:
         print(f"Error: {e}")
 
-# %% [markdown]
-# ## Unit Test
-# 
-# The following cell runs a quick test to verify that the HDF5 read/write functions work correctly.
-
-# %%
-#| hide
-if __name__ == "__main__":
-    print('testing h5IO ver 3')
-    outF = 'abcTest.h5'
-    verb = 1
-    
-    var1 = float(15)  # single variable
-    one = np.zeros(shape=5, dtype=np.int16); one[3] = 3
-    two = np.zeros(shape=(2, 3)); two[1, 2] = 4
-
-    three = np.empty((2), dtype='object')
-    three[0] = 'record aaaa'
-    three[1] = 'much longer record bbb'
-    
-    text = 'This is text1'  
-    metaD = {"age": 17, "dom": "white", "dates": [11, 22, 33]}
-   
-    outD = {'one': one, 'two': two, 'var1': var1, 'atext': text, 'three': three}
-    write4_data_hdf5(outD, outF, metaD=metaD, verb=verb)
-
-    print('\nM: *****  verify by reading it back from', outF)
-    big, meta2 = read4_data_hdf5(outF, verb=verb)
-    print(' recovered meta-data'); pprint(meta2)
-    print('dump read-in data')
-    for x in big:
-        print('\nkey=', x); pprint(big[x])
-  
-    rec2 = big['three'][1].decode("utf-8") 
-    print('rec2:', type(rec2), rec2)
-    print('\n check raw content:   h5dump %s\n' % outF)

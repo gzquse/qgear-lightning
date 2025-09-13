@@ -4,23 +4,15 @@
 __all__ = ['reverse_key', 'process_dict', 'string_to_dict', 'counts_cudaq_to_qiskit', 'cudaq_run_parallel_qpu', 'cudaq_run',
            'circ_kernel', 'qft', 'inverse_qft', 'qft_kernel', 'qiskit_to_gateList']
 
-# %% ../nbs/core.ipynb 4
+# %% ../nbs/core.ipynb 3
 import cudaq
 import numpy as np
 from typing import List
 
-# %% [markdown]
-# ## String and Dictionary Utilities
-# 
-# These functions help with parsing CUDA-Q results into Qiskit-style count dictionaries.
-
-# %%
-#| export
 def reverse_key(key: str) -> str:
     "Reverse a string key (used for bitstring manipulation)"
     return key[::-1]
 
-#| export
 def process_dict(d: dict) -> dict:
     """
     Reverse all keys in the dictionary and map them to corresponding values.
@@ -30,7 +22,6 @@ def process_dict(d: dict) -> dict:
     mapped_reversed_dict = {k: mapped_dict[k] for k in reversed_dict if k in mapped_dict}
     return mapped_reversed_dict
 
-#| export
 def string_to_dict(raw_string: str) -> dict:
     """
     Convert a raw CUDA-Q result string to a dictionary with reversed keys.
@@ -44,7 +35,6 @@ def string_to_dict(raw_string: str) -> dict:
     rev = {reverse_key(k): v for k, v in mapped_dict.items()}
     return rev
 
-#| export
 def counts_cudaq_to_qiskit(resL: list) -> list:
     """
     Convert a list of CUDA-Q results into Qiskit-style counts dictionaries.
@@ -55,22 +45,6 @@ def counts_cudaq_to_qiskit(resL: list) -> list:
         probsBL[i] = string_to_dict(buf)
     return probsBL
 
-# %% [markdown]
-# ## Qiskit → CUDA-Q Conversion
-# 
-# This function translates a Qiskit circuit into a CUDA-Q kernel.
-
-# %%
-#| export
-
-
-# %% [markdown]
-# ## CUDA-Q Execution Utilities
-# 
-# These functions run CUDA-Q kernels either sequentially or in parallel across multiple QPUs.
-
-# %%
-#| export
 def cudaq_run_parallel_qpu(qKerL, shots: int, qpu_count: int):
     """
     Run multiple CUDA-Q kernels in parallel across available QPUs.
@@ -81,20 +55,12 @@ def cudaq_run_parallel_qpu(qKerL, shots: int, qpu_count: int):
         count_futures[kernel].append(cudaq.sample_async(kernel, shots_count=shots, qpu_id=gpu_id))
     return [counts.get() for futures in count_futures.values() for counts in futures]
 
-#| export
 def cudaq_run(qKerL, shots: int):
     """
     Run multiple CUDA-Q kernels sequentially.
     """
     return [cudaq.sample(kernel, shots_count=shots) for kernel in qKerL]
 
-# %% [markdown]
-# ## CUDA-Q Kernel: `circ_kernel`
-# 
-# This kernel constructs a quantum circuit from a list of gates and parameters.
-
-# %%
-#| export
 @cudaq.kernel
 def circ_kernel(num_qubit: int, num_gate: int, gate_type: list[int], angles: list[float]):
     qvector = cudaq.qvector(num_qubit)
@@ -121,11 +87,6 @@ def circ_kernel(num_qubit: int, num_gate: int, gate_type: list[int], angles: lis
             theta, phi, lambda_ = angles[j], angles[j+1], angles[j+2]
             u3(theta, phi, lambda_, q0)
 
-# %% [markdown]
-# ## Quantum Fourier Transform (QFT) Kernels
-
-# %%
-#| export
 @cudaq.kernel
 def qft(qubits: cudaq.qview):
     qubit_count = len(qubits)
@@ -135,12 +96,10 @@ def qft(qubits: cudaq.qview):
             angle = (2 * np.pi) / (2**(j - i + 1))
             cr1(angle, [qubits[j]], qubits[i])
 
-#| export
 @cudaq.kernel
 def inverse_qft(qubits: cudaq.qview):
     cudaq.adjoint(qft, qubits)
 
-#| export
 @cudaq.kernel
 def qft_kernel(input_state: List[int]):
     qubit_count = len(input_state)
@@ -150,13 +109,6 @@ def qft_kernel(input_state: List[int]):
             x(qubits[i])
     qft(qubits)
 
-# %% [markdown]
-# ## Qiskit → Gate List Conversion
-# 
-# This function converts a list of Qiskit circuits into a compact gate list representation for CUDA-Q.
-
-# %%
-#| export
 def qiskit_to_gateList(qcL):
     nCirc = len(qcL)
     qc = qcL[0]
